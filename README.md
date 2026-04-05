@@ -18,35 +18,32 @@ Built for FAST NUCES Agentic AI / Multi-Agent Systems Assignment.
 
 ## 🤖 Agent Architecture
 
-[You run main.py]
-│
-▼
-[CEO Agent] ──────────────────────────────────────┐
-│                                          │
-├──── task ──▶ [Product Agent]             │
-│                    │                     │
-│              spec to both                │
-│         ┌──────────┴──────────┐          │
-│         ▼                     ▼          │
-│  [Engineer Agent]    [Marketing Agent]   │
-│         │                     │          │
-│   PR+Issue URL          Email+Slack      │
-│         └──────────┬──────────┘          │
-│                    │                     │
-│◀─── results ───────┘                     │
-│                                          │
-├──── reviews output (LLM) ────────────────┘
-│         │
-│         ├── approved → continue
-│         └── revision_needed → sends revision_request back
-│
-├──── task ──▶ [QA Agent]
-│                    │
-│              reviews HTML + copy
-│              posts PR comments
-│◀─── pass/fail ─────┘
-│
-└──── posts final summary to Slack
+[## 🤖 Agent Architecture
+
+The system has 5 agents that communicate through a shared message bus. Here is exactly which agent talks to which:
+
+**CEO Agent** is the orchestrator. It starts the entire pipeline by receiving the startup idea and using an LLM to decompose it into 3 tasks. It sends a task message to the Product agent, Engineer agent, and Marketing agent. After each agent responds, the CEO reviews the output using an LLM and either approves it or sends a revision_request back to that agent. Once all agents complete their work, the CEO sends a task to the QA agent and posts the final summary to Slack.
+
+**Product Agent** receives a task from the CEO. It uses an LLM to generate a complete product specification including value proposition, personas, features, and user stories. It then sends the product spec to both the Engineer agent and the Marketing agent. It also sends a confirmation message back to the CEO.
+
+**Engineer Agent** receives the product spec from the Product agent. It uses an LLM to generate a complete HTML landing page, then takes real actions on GitHub: creates a new branch, commits the HTML file authored by EngineerAgent, creates a GitHub issue, and opens a pull request. It sends the PR URL and issue URL back to the CEO.
+
+**Marketing Agent** receives the product spec from the Product agent. It uses an LLM to generate a tagline, product description, cold outreach email, and three social media posts for Twitter, LinkedIn, and Instagram. It sends the cold email via SendGrid and posts a Block Kit message to the Slack #launches channel including the GitHub PR link. It sends all generated copy back to the CEO.
+
+**QA Agent** receives a task from the CEO containing the HTML content, marketing copy, PR URL, and product spec. It uses an LLM to review the HTML landing page and marketing copy separately, then posts at least 2 inline review comments on the GitHub PR. It sends a structured pass/fail report back to the CEO. If the verdict is fail, the CEO sends a revision_request to the relevant agent.
+
+**Message Flow:**
+1. CEO → Product (task)
+2. CEO → Engineer (task)
+3. CEO → Marketing (task)
+4. Product → Engineer (product spec)
+5. Product → Marketing (product spec)
+6. Product → CEO (confirmation)
+7. Engineer → CEO (PR URL + issue URL)
+8. Marketing → CEO (all copy)
+9. CEO → QA (HTML + copy + PR URL)
+10. QA → CEO (pass/fail verdict)
+11. CEO → Engineer (revision_request if QA fails)
 
 ### Agent Responsibilities
 
@@ -110,8 +107,9 @@ python3 main.py
 
 ## 🔗 Links
 
-- **GitHub PR (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/pull/7
-- **GitHub Issue (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/issues/6
+- **GitHub PR (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/pull/19
+- **GitHub Issue (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/issues/18
+- **Slack Workspace:** https://join.slack.com/t/launchmind-workspace/shared_invite/zt-3u53a6ym9-HPgc7OQwFWxEUuZlMwVZew
 
 ### Slack Workspace
 [Screenshots below show the bot in action]
