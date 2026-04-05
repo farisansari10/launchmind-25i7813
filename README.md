@@ -126,20 +126,22 @@ python3 main.py
 
 ---
 
-## 📁 Repository Structure
 
+## 📁 Repository Structure
+```
 launchmind-snackalert/
 ├── agents/
-│   ├── ceo_agent.py        # Orchestrator - decomposes idea, reviews outputs
-│   ├── product_agent.py    # Generates product specification
-│   ├── engineer_agent.py   # Builds landing page, commits to GitHub
-│   ├── marketing_agent.py  # Sends email, posts to Slack
-│   └── qa_agent.py         # Reviews HTML + copy, posts PR comments
-├── main.py                 # Single entry point - runs entire system
-├── message_bus.py          # Shared messaging implementation
-├── requirements.txt        # All dependencies
-├── .env.example            # Template for environment variables
-└── .gitignore              # Ensures .env is never committed
+│   ├── ceo_agent.py          # Orchestrator - decomposes idea, reviews outputs
+│   ├── product_agent.py      # Generates product specification
+│   ├── engineer_agent.py     # Builds landing page, commits to GitHub
+│   ├── marketing_agent.py    # Sends email, posts to Slack
+│   └── qa_agent.py           # Reviews HTML + copy, posts PR comments
+├── main.py                   # Single entry point - runs entire system
+├── message_bus.py            # Shared messaging implementation
+├── requirements.txt          # All dependencies
+├── .env.example              # Template for environment variables
+└── .gitignore                # Ensures .env is never committed
+```
 
 ---
 
