@@ -3,7 +3,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from message_bus import send_message, get_last_message, call_llm_json
+from message_bus import send_message, get_last_message, call_llm_json, message_bus
 
 load_dotenv()
 
@@ -167,11 +167,24 @@ def run_product_agent():
         print("❌ Product Agent: No task found in message bus!")
         return None
 
-    idea = task_message["payload"]["idea"]
-    task = task_message["payload"]["task"]
-    parent_id = task_message["message_id"]
+    # Handle both task and revision_request message types
+    if task_message["message_type"] == "revision_request":
+        # CEO sent revision request - get original idea from earlier task
+        original_task = message_bus["product"][0]  # first message is always the original task
+        idea = original_task["payload"]["idea"]
+        task = original_task["payload"]["task"]
+        # Add feedback to the task so LLM knows what to improve
+        feedback = task_message["payload"]["feedback"]
+        task = f"{task}\n\nIMPORTANT REVISION FEEDBACK: {feedback}"
+        print(f"📥 Received revision request from CEO")
+        print(f"   Feedback: {feedback[:80]}...")
+    else:
+        # Normal task message
+        idea = task_message["payload"]["idea"]
+        task = task_message["payload"]["task"]
+        print(f"📥 Received task from CEO: {task[:80]}...")
 
-    print(f"📥 Received task from CEO: {task[:80]}...")
+    parent_id = task_message["message_id"]
 
     spec = generate_product_spec(idea, task)
     send_spec_to_agents(spec, parent_id)
