@@ -107,8 +107,8 @@ python3 main.py
 
 ## 🔗 Links
 
-- **GitHub PR (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/pull/19
-- **GitHub Issue (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/issues/18
+- **GitHub PR (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/pull/23
+- **GitHub Issue (Engineer Agent):** https://github.com/farisansari10/launchmind-25i7813/issues/22
 - **Slack Workspace:** https://join.slack.com/t/launchmind-workspace/shared_invite/zt-3u53a6ym9-HPgc7OQwFWxEUuZlMwVZew
 
 ### Slack Workspace
