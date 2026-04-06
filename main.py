@@ -157,9 +157,9 @@ def run_launchmind():
         print("❌ QA Agent failed. Continuing anyway.")
 
     # ─────────────────────────────────────────
+   # ─────────────────────────────────────────
     # PHASE 8: CEO REVIEWS QA REPORT
-    # THIS IS FEEDBACK LOOP 2
-    # If QA failed, CEO instructs Engineer to revise
+    # FEEDBACK LOOP 2
     # ─────────────────────────────────────────
 
     print("\n📌 PHASE 8: CEO reviewing QA report (Feedback Loop 2)...")
@@ -185,12 +185,43 @@ def run_launchmind():
                 # Send revision request to Engineer
                 send_revision_request(
                     agent_name="engineer",
-                    feedback=f"QA Agent found these issues: {qa_payload['issues']}. Please revise the HTML.",
+                    feedback=f"QA Agent found these issues with the HTML: {qa_payload['html_review']['issues']}. Please fix all of them in the revised version.",
                     parent_message_id=qa_message["message_id"]
                 )
 
-                print("✅ CEO: Revision request sent to Engineer agent")
-                print("   (In a full system, Engineer would now revise and resubmit)")
+                # ─────────────────────────────────────────
+                # ENGINEER ACTUALLY REVISES THE HTML
+                # ─────────────────────────────────────────
+                print("\n📌 PHASE 8b: Engineer Agent revising landing page...")
+                revised_result = run_engineer_agent()
+
+                if revised_result:
+                    revised_pr_url, revised_issue_url, revised_html = revised_result
+                    print(f"\n✅ Revised PR URL: {revised_pr_url}")
+
+                    # Update pr_url to point to revised PR
+                    pr_url = revised_pr_url
+
+                    print("\n📌 PHASE 8c: QA Agent re-reviewing revised HTML...")
+
+                    # Send revised HTML to QA for re-review
+                    send_message(
+                        from_agent="ceo",
+                        to_agent="qa",
+                        message_type="task",
+                        payload={
+                            "html_content": revised_html,
+                            "marketing_copy": marketing_copy,
+                            "pr_url": revised_pr_url,
+                            "spec": spec
+                        }
+                    )
+
+                    revised_qa_result = run_qa_agent()
+
+                    if revised_qa_result:
+                        print(f"\n✅ Revised HTML Score: {revised_qa_result['html_review']['score']}/10")
+                        print(f"   Revised Verdict: {revised_qa_result['html_review']['verdict'].upper()}")
 
             else:
                 print("✅ CEO: QA passed! Everything looks good.")

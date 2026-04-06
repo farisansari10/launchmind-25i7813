@@ -6,7 +6,7 @@ import base64
 import time
 import requests
 from dotenv import load_dotenv
-from message_bus import send_message, get_last_message, call_llm, call_llm_json
+from message_bus import send_message, get_last_message, call_llm, call_llm_json, message_bus
 
 load_dotenv()
 
@@ -65,6 +65,49 @@ def generate_landing_page(spec):
     print("✅ Engineer Agent: Landing page generated!")
     return html_content
 
+def generate_improved_landing_page(spec, feedback):
+    """
+    Generates an improved HTML landing page based on QA feedback.
+    Called when CEO sends a revision_request to Engineer.
+    """
+    print("\n🧠 Engineer Agent: Generating IMPROVED HTML landing page based on QA feedback...")
+
+    system_prompt = """You are an expert frontend developer.
+    You write clean, complete, well-styled HTML pages.
+    Return ONLY the raw HTML code. No explanations, no markdown, no backticks.
+    Just pure HTML starting with <!DOCTYPE html>"""
+
+    user_prompt = f"""
+    You previously built a landing page for this startup:
+    Value Proposition: {spec['value_proposition']}
+    Features: {[f['name'] for f in spec['features']]}
+
+    The QA team reviewed it and found these specific issues:
+    {feedback}
+
+    Create an improved, complete HTML landing page that:
+    1. Fixes ALL the issues mentioned in the QA feedback
+    2. Includes ALL {len(spec['features'])} features clearly
+    3. Has a strong headline matching the value proposition
+    4. Has a clear "Get Early Access" call-to-action button
+    5. Has professional green color scheme
+    6. Is noticeably better than the previous version
+
+    Return ONLY the raw HTML. No backticks, no explanations.
+    """
+
+    html_content = call_llm(ENGINEER_MODEL, system_prompt, user_prompt)
+
+    # Clean response
+    html_content = html_content.strip()
+    if html_content.startswith("```"):
+        html_content = html_content.split("```")[1]
+        if html_content.startswith("html"):
+            html_content = html_content[4:]
+    html_content = html_content.strip()
+
+    print("✅ Engineer Agent: Improved landing page generated!")
+    return html_content
 
 # ─────────────────────────────────────────
 # GET BASE SHA
@@ -267,13 +310,44 @@ def run_engineer_agent():
         print("❌ Engineer Agent: No task found in message bus!")
         return None
 
-    spec = task_message["payload"]
-    parent_id = task_message["message_id"]
+    # Handle both result (product spec) and revision_request message types
+    if task_message["message_type"] == "revision_request":
+        # CEO sent revision request - get original spec from earlier message
+        # Find the product spec message in engineer's inbox
+        engineer_messages = message_bus["engineer"]
+        spec_message = None
+        for msg in engineer_messages:
+            if msg["message_type"] == "result" and msg["from_agent"] == "product":
+                spec_message = msg
+                break
 
-    print(f"📥 Received product spec from Product agent")
-    print(f"   Value Proposition: {spec['value_proposition']}")
+        if not spec_message:
+            print("❌ Engineer Agent: No product spec found!")
+            return None
 
-    html_content = generate_landing_page(spec)
+        spec = spec_message["payload"]
+        feedback = task_message["payload"]["feedback"]
+        parent_id = task_message["message_id"]
+
+        print(f"📥 Received revision request from CEO")
+        print(f"   Feedback: {feedback[:80]}...")
+
+        # Generate IMPROVED HTML with feedback
+        html_content = generate_improved_landing_page(spec, feedback)
+
+    else:
+        # Normal product spec message
+        spec = task_message["payload"]
+        parent_id = task_message["message_id"]
+        feedback = None
+
+        print(f"📥 Received product spec from Product agent")
+        print(f"   Value Proposition: {spec['value_proposition']}")
+
+        # Generate HTML landing page
+        html_content = generate_landing_page(spec)
+
+    # GitHub actions
     base_sha = get_base_sha()
     branch_name = create_branch(base_sha, f"agent-landing-page-{int(time.time())}")
     commit_html_to_github(html_content, branch_name)
