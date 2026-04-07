@@ -189,9 +189,3 @@ Every message follows the required schema:
 **Loop 2:** QA reviews HTML + copy → sends pass/fail to CEO → CEO sends revision_request to Engineer if fail
 
 ---
-
-## 🎯 Bonus Features Implemented
-
-- ✅ QA Agent (+5%)
-- ✅ Mixed LLM providers — Claude, GPT-4o-mini, Gemini (+2%)
-
