@@ -136,15 +136,6 @@ python3 main.py
 
 ---
 
-## 👤 Group Members
-
-| Name | Student ID | Agent Built |
-|---|---|---|
-| Faris Ansari | 25i-7813 | CEO, Product, Engineer, Marketing, QA |
-
----
-
-
 ## 📁 Repository Structure
 ```
 launchmind-snackalert/
